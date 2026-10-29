@@ -421,6 +421,9 @@ internal static unsafe class JobActions
 
         // RDM — all flat: mana is "Additional Effect", never combo-gated
         [37004] = [Gauge(RdmWhite, 2), Gauge(RdmBlack, 2)],   // Jolt III
+        [7524]  = [Gauge(RdmWhite, 2), Gauge(RdmBlack, 2)],   // Jolt II (below level 84)
+        [7503]  = [Gauge(RdmWhite, 2), Gauge(RdmBlack, 2)],   // Jolt (below level 62)
+        [7509]  = [Gauge(RdmWhite, 3), Gauge(RdmBlack, 3)],   // Scatter (below level 66)
         [37006] = [Gauge(RdmWhite, 3), Gauge(RdmBlack, 3)],   // Grand Impact
         [16526] = [Gauge(RdmWhite, 3), Gauge(RdmBlack, 3)],   // Impact
         [7511]  = [Gauge(RdmWhite, 5)],                       // Verstone
@@ -433,8 +436,8 @@ internal static unsafe class JobActions
         [7525]  = [Gauge(RdmBlack, 11), Gauge(RdmManaStacks, -3), Random(0.2f, Status(1234, 30f))],   // Verflare (+11 B, -3 stacks, 20% Verfire Ready)
         [16530] = [Gauge(RdmWhite, 4), Gauge(RdmBlack, 4)],   // Scorch
         [25858] = [Gauge(RdmWhite, 4), Gauge(RdmBlack, 4)],   // Resolution
-        [7505]  = [Random(0.5f, Status(1234, 30f))],   // Verthunder → Verfire Ready (50%)
-        [7507]  = [Random(0.5f, Status(1235, 30f))],   // Veraero → Verstone Ready (50%)
+        [7505]  = [Gauge(RdmBlack, 6), Random(0.5f, Status(1234, 30f))],   // Verthunder, below level 62 (+ Verfire Ready, 50%)
+        [7507]  = [Gauge(RdmWhite, 6), Random(0.5f, Status(1235, 30f))],   // Veraero, below level 62 (+ Verstone Ready, 50%)
         [7518]  = [Status(1238, 20f), Unlocks(37006, Status(3877, 30f))],  // Acceleration + Grand Impact Ready
         [7520]  = [Status(1239, 20f), Unlocks(37005, Status(3876, 30f))],  // Embolden + Thorned Flourish
         [7521]  = [Status(1971, 30f), Status(3875, 30f, 3), Unlocks(37007, Status(3878, 30f))], // Manafication → range + Magicked Swordplay (3 stk) + Prefulgence Ready
