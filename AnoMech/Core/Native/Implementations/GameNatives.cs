@@ -25,6 +25,7 @@ internal static class GameNatives
         Natives.PlayerConditions = new PlayerConditions();
         Natives.LimitBreak = new LimitBreakController();
         Natives.Waymarks = new Waymarks();
+        Natives.Vfx = new VfxFunctions();
         Natives.Bgm = new Bgm();
     }
 }

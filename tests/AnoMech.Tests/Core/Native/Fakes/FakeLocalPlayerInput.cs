@@ -34,5 +34,10 @@ internal sealed class FakeLocalPlayerInput : ILocalPlayerInput
         SteerDirection = direction is { } d && d.LengthSquared() > 0f ? System.Numerics.Vector2.Normalize(d) : null;
         SteerSpeed = speed;
     }
+
+    public Func<uint, uint?>? AdjustActionId { get; set; }
+    public Func<ActionType, uint, int?>? AdjustCastTime { get; set; }
+    public Func<ActionType, uint, bool, uint?>? AdjustActionStatus { get; set; }
+
     public void Dispose() { }
 }

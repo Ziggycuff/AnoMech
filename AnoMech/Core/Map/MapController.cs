@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using AnoMech.Core.Native.Interfaces;
 
 namespace AnoMech.Core.Map;
@@ -55,6 +56,10 @@ public sealed class MapController
 
     private PendingSnapshot? pendingSnapshot;
 
+    private Vector3? pendingSpawnWallDrop;
+    private int spawnWallDropFramesLeft;
+    private const float SpawnWallRadius = 10f;
+
     private struct PendingDirectorUpdate
     {
         public uint Category, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6;
@@ -94,12 +99,33 @@ public sealed class MapController
         pendingSnapshot = null;
         pendingDirectorUpdates.Clear();
         pendingBattleTalks.Clear();
+        pendingSpawnWallDrop = null;
         layerDumpFrame = int.MaxValue;
     }
 
     // Per-frame poll. Called from SimWorld.Tick.
+    public void DropSpawnWall(Vector3 spawn)
+    {
+        pendingSpawnWallDrop = spawn;
+        spawnWallDropFramesLeft = RetryMaxFrames;
+    }
+
+    private void TickSpawnWallDrop()
+    {
+        if (pendingSpawnWallDrop is not { } spawn) return;
+        if (Natives.Layout.DisableSpawnAreaColliders(spawn, SpawnWallRadius) > 0)
+        {
+            pendingSpawnWallDrop = null;
+            return;
+        }
+        if (--spawnWallDropFramesLeft > 0) return;
+        DiagnosticLog.Warn($"[MapController] Gave up dropping the spawn wall after {RetryMaxFrames} frames -- no SharedGroup near ({spawn.X:F1},{spawn.Z:F1}).");
+        pendingSpawnWallDrop = null;
+    }
+
     internal void Tick()
     {
+        TickSpawnWallDrop();
         if (IsInInstance && layerDumpFrame <= LayerDumpFrames[^1])
         {
             layerDumpFrame++;

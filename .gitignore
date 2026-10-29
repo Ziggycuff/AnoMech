@@ -10,4 +10,5 @@ FFXIV-RaidsRewritten-Reference.md
 *.user
 __pycache__
 /tools/.venv/
+logdalamud
 TestResults/

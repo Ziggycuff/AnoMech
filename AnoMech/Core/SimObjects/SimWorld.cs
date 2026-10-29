@@ -17,7 +17,7 @@ namespace AnoMech.Core.SimObjects;
 // the children (enemies, tethers, waymarks, ...) one run, gone in Despawn. Spawn entry points
 // (ApplyParty, SpawnEnemy, Tether, PlaceWaymarks, EnforceArenaBoundary) construct the SimObject
 // and register it for teardown. Zone loading and map effects go through world.Map.
-public sealed class SimWorld : ISimObject, IDisposable
+public sealed partial class SimWorld : ISimObject, IDisposable
 {
     // Ownership
     private readonly SimChildren children = new();
@@ -127,10 +127,12 @@ public sealed class SimWorld : ISimObject, IDisposable
     public void PlaceWaymarks(IReadOnlyList<Waymark> layout)
         => children.GetOrAdd(() => new SimWaymarks(Coordinates)).Place(layout);
 
-    // Per-frame arena fence at `radius` from ScenarioOrigin. Kills any active
-    // party member (player included) who leaves the ring.
+    // Per-frame arena fence. Kills any active party member (player included) who leaves `shape`.
+    public void EnforceArenaBoundary(IArenaShape shape, string cause = "Walked out of arena")
+        => children.SetSingleton(new SimArenaBoundary(Party, shape, cause));
+
     public void EnforceArenaBoundary(float radius, string cause = "Walked out of arena")
-        => children.SetSingleton(new SimArenaBoundary(Party, radius, cause));
+        => EnforceArenaBoundary(new CircleArena(radius), cause);
 
     // Where the server stops an NPC a knockback pushes: a circle this far from ScenarioOrigin. Set by
     // the zone for the run; without it a push goes its full distance.

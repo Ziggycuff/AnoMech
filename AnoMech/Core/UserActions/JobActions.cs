@@ -229,6 +229,8 @@ internal static unsafe class JobActions
     private static readonly ResourceGauge RprLemureShroud = new() { Read = jgm => jgm->Reaper.LemureShroud, Write = (jgm, v) => jgm->Reaper.LemureShroud = (byte)v, Max = 5 };
     private static readonly ResourceGauge RprVoidShroud = new() { Read = jgm => jgm->Reaper.VoidShroud, Write = (jgm, v) => jgm->Reaper.VoidShroud = (byte)v, Max = 8 };
     private static readonly ResourceGauge SgeAddersting = new() { Read = jgm => jgm->Sage.Addersting, Write = (jgm, v) => jgm->Sage.Addersting = (byte)v, Max = 3 };
+    // The client swaps in the Eukrasian spells off this gauge byte, not off the Eukrasia status.
+    private static readonly ResourceGauge SgeEukrasia = new() { Read = jgm => jgm->Sage.Eukrasia, Write = (jgm, v) => jgm->Sage.Eukrasia = (byte)v, Max = 1 };
     private static readonly ResourceGauge PctPalette = new() { Read = jgm => jgm->Pictomancer.PalleteGauge, Write = (jgm, v) => jgm->Pictomancer.PalleteGauge = (byte)v, Max = 100 };
     private static readonly ResourceGauge PctPaint = new() { Read = jgm => jgm->Pictomancer.Paint, Write = (jgm, v) => jgm->Pictomancer.Paint = (byte)v, Max = 5 };
     private static readonly ResourceGauge BlmPolyglot = new() { Read = jgm => jgm->BlackMage.PolyglotStacks, Write = (jgm, v) => jgm->BlackMage.PolyglotStacks = (byte)v, Max = 3 };
@@ -357,9 +359,11 @@ internal static unsafe class JobActions
         [36957] = [Gauge(NinNinki, 40), Status(3850, 30f)], // Dokumori (+ Higi)
         [2264]  = [Status(497, 15f)],                     // Kassatsu
         [7403]  = [Status(1186, 6f), Status(3851, 30f)],  // Ten Chi Jin + Tenri Jindo Ready
-        [2267]  = [Status(2690, 30f, 3)],                 // Raiton → Raiju Ready (3 stk)
         [16493] = [Status(1954, 30f, 5), Status(2723, 45f)], // Bunshin (5 stk) + Phantom Kamaitachi Ready
+        [2269]  = [Status(3848, 20f)],                    // Huton → Shadow Walker
         [2271]  = [Status(3848, 20f)],                    // Suiton → Shadow Walker
+        [18879] = [Status(3848, 20f)],                    // Huton (Ten Chi Jin) → Shadow Walker
+        [18881] = [Status(3848, 20f)],                    // Suiton (Ten Chi Jin) → Shadow Walker
 
         // RPR
         [24373] = [Gauge(RprSoul, 10)],          // Slice
@@ -443,6 +447,7 @@ internal static unsafe class JobActions
         [7521]  = [Status(1971, 30f), Status(3875, 30f, 3), Status(3878, 30f)], // Manafication → range + Magicked Swordplay (3 stk) + Prefulgence Ready
         // Enchanted melee each grant 1 Mana Stack (at 3, Verthunder/Veraero → Verflare/Verholy):
         [7527] = [Gauge(RdmManaStacks, 1)], [7528] = [Gauge(RdmManaStacks, 1)], [7529] = [Gauge(RdmManaStacks, 1)], // Enchanted Riposte/Zwerchhau/Redoublement
+        [45960] = [Gauge(RdmManaStacks, 1)], [45961] = [Gauge(RdmManaStacks, 1)], [45962] = [Gauge(RdmManaStacks, 1)], // the same under Manafication
         [7530] = [Gauge(RdmManaStacks, 1)], [37002] = [Gauge(RdmManaStacks, 1)], [37003] = [Gauge(RdmManaStacks, 1)], // Enchanted Moulinet/Deux/Trois
         // TODO: unbalanced mana
 
@@ -593,7 +598,14 @@ internal static unsafe class JobActions
         [34685] = [Status(3686, 10f)],                      // Tempera Coat → self-status (enables Tempera Grassa)
 
         // SGE
-        [24290] = [Status(2606, 0f)],                     // Eukrasia (toggle, no-expiry)
+        [24290] = [Status(2606, 0f), Gauge(SgeEukrasia, 1)], // Eukrasia (toggle, no-expiry)
+        [24291] = [Gauge(SgeEukrasia, -1)],               // Eukrasian Diagnosis
+        [24292] = [Gauge(SgeEukrasia, -1)],               // Eukrasian Prognosis
+        [24293] = [Gauge(SgeEukrasia, -1)],               // Eukrasian Dosis
+        [24308] = [Gauge(SgeEukrasia, -1)],               // Eukrasian Dosis II
+        [24314] = [Gauge(SgeEukrasia, -1)],               // Eukrasian Dosis III
+        [37032] = [Gauge(SgeEukrasia, -1)],               // Eukrasian Dyskrasia
+        [37034] = [Gauge(SgeEukrasia, -1)],               // Eukrasian Prognosis II
         [37035] = [Status(3898, 20f), Status(3899, 20f)], // Philosophia + Eudaimonia
         [24309] = [Gauge(SgeAddersgall, 1)],              // Rhizomata → +1 Addersgall (passive fill in TimedGauges)
     };
@@ -639,7 +651,7 @@ internal static unsafe class JobActions
         // MNK
         [2513] = [AnyWeaponskill()], [3843] = [ActionId(36950)], [3842] = [ActionId(36949)], [3841] = [ActionId(36944)],
         // NIN
-        [3851] = [ActionId(36961)], [2690] = [AnyWeaponskill()], [2689] = [ActionId(7402), ActionId(36960)],
+        [3851] = [ActionId(36961)], [2690] = [ActionId(25777), ActionId(25778)], [2689] = [ActionId(7402), ActionId(36960)],
         [2723] = [ActionId(25774)], [3850] = [ActionId(36959), ActionId(36960)], [3848] = [ActionId(36958), ActionId(2258), ActionId(16489)],
         // SAM
         [1236] = [ActionId(7486)], [2959] = [ActionId(25781)], [3855] = [ActionId(36964)], [3856] = [ActionId(36966), ActionId(36965)],
@@ -679,7 +691,7 @@ internal static unsafe class JobActions
         [155]  = [ActionId(135)],     // Freecure: consumed by Cure II
 
         [3882] = [ActionId(37012)], [1896] = [ActionId(185), ActionId(37013), ActionId(3583), ActionId(7434), ActionId(37015), ActionId(37016)],
-        [2606] = [ActionId(24314), ActionId(37032), ActionId(24291), ActionId(37034)],
+        [2606] = [ActionId(24291), ActionId(24292), ActionId(24293), ActionId(24308), ActionId(24314), ActionId(37032), ActionId(37034)],
         // VPR
         [3772] = [ActionId(34607), ActionId(34615)], [3672] = [ActionId(34606), ActionId(34614)],
         [3645] = [ActionId(34610)], [3646] = [ActionId(34611)], [3647] = [ActionId(34612)], [3648] = [ActionId(34613)],
@@ -695,7 +707,7 @@ internal static unsafe class JobActions
         // stack-decrement / any-GCD consumers (rely on the AddStatus(-1) consume above):
         [1368] = [ActionId(7384), ActionId(16458), ActionId(16459), ActionId(25748), ActionId(25749), ActionId(25750)], // Requiescat: empowered casts / Blades
         [1954] = [AnyWeaponskill()],   // Bunshin: one stack per weaponskill
-        [3875] = [ActionId(7527), ActionId(7528), ActionId(7529), ActionId(7530), ActionId(37002), ActionId(37003)],  // Magicked Swordplay: enchanted melee
+        [3875] = [ActionId(7527), ActionId(7528), ActionId(7529), ActionId(45960), ActionId(45961), ActionId(45962), ActionId(7530), ActionId(37002), ActionId(37003)],  // Magicked Swordplay: enchanted melee
         [110]  = [AnyWeaponskill()],   // Perfect Balance: one stack per weaponskill
         [3688] = [AnyGcd()],           // Hyperphantasia: one stack per pictomancy GCD
     };

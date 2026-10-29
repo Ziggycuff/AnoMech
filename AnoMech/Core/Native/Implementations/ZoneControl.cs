@@ -251,6 +251,18 @@ public sealed unsafe partial class ZoneControl : IZoneControl
         StartWeatherDiagnostic(weatherId);
     }
 
+    // The loaded zone's own weather table (EnvScene._weatherIds), zeros dropped.
+    public static byte[] ZoneWeatherIds()
+    {
+        var env = EnvManager.Instance();
+        if (env == null || env->EnvScene == null) return [];
+        var raw = (byte*)env->EnvScene + 0x30;
+        var ids = new List<byte>();
+        for (var i = 0; i < 32; i++)
+            if (raw[i] != 0) ids.Add(raw[i]);
+        return ids.ToArray();
+    }
+
     // Weather for a fresh zone load, sent by TickWeather once the environment scene exists.
     private byte? pendingWeather;
 

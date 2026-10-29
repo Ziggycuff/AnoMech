@@ -65,7 +65,10 @@ public sealed class InstanceSession
         // Before any action mutates it, so Exit can restore it.
         Natives.UserActions.OnSessionStart();
         world.ScenarioOrigin = zone.Origin;
-        session.OpenEntranceBarrier(init.EntranceBarrier);
+        if (init.EntranceBarrier.IsKnown)
+            session.OpenEntranceBarrier(init.EntranceBarrier);
+        else
+            world.Map.DropSpawnWall(init.EntranceBarrier.Position);
         return session;
     }
 

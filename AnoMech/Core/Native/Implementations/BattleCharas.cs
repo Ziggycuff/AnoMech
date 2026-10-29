@@ -38,7 +38,19 @@ internal sealed unsafe class BattleCharas : IBattleCharas
     public IBattleCharaProxy? SpawnBattleNpcFromPacket(EnemySpawnConfig config, Placement placement, out uint entityId)
     {
         entityId = 0;
-        if (BuildSpawnPacket(config) is not { } packet) return null;
+        if (config.NpcSpawnTemplate is { Length: var length } && length != sizeof(SpawnNpcPacket))
+        {
+            DiagnosticLog.Warn($"[BattleCharas.SpawnBattleNpcFromPacket] template is {length} bytes, expected {sizeof(SpawnNpcPacket)}.");
+            return null;
+        }
+        SpawnNpcPacket packet;
+        if (config.NpcSpawnTemplate is { } template)
+        {
+            packet = new SpawnNpcPacket();
+            fixed (byte* src = template) Buffer.MemoryCopy(src, &packet, sizeof(SpawnNpcPacket), template.Length);
+        }
+        else if (BuildSpawnPacket(config) is { } built) packet = built;
+        else return null;
         if (CharacterManager.Instance() == null) return null;
         var idx = CharacterManagerHelper.FindFreeIndex();
         if (idx < 0)

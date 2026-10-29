@@ -75,7 +75,10 @@ public record struct EnemySpawnConfig(
     IReadOnlyList<SpawnStatus>? Statuses = null,
     byte ModelState = 0,
     // ModelScale row; retail sends 0 for most BNpcs.
-    byte ModelScale = 0);
+    byte ModelScale = 0,
+    // A whole NpcSpawn packet body used instead of the one built from this config (the fork's DSR
+    // knights, whose gear comes from NpcEquip); Placement still applies.
+    byte[]? NpcSpawnTemplate = null);
 
 public readonly record struct SpawnStatus(ushort StatusId, ushort Param = 0);
 
@@ -90,7 +93,7 @@ public sealed record NpcAppearance(
     // The 26 CustomizeData bytes.
     byte[]? Customize = null);
 
-public sealed class SimEnemy : SimNpc
+public sealed partial class SimEnemy : SimNpc
 {
     // The cast packets and the animation lock live in Casting; EnemyActionHandler decides when
     // they go out and what the action does.
@@ -415,6 +418,7 @@ public sealed class SimEnemy : SimNpc
     public override void Tick(float deltaSeconds)
     {
         base.Tick(deltaSeconds);
+        TickForkVisibility();
         TickTimelineWatch(deltaSeconds);
         TickPacketSpawnCheckpoints();
 

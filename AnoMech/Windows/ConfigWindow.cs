@@ -16,7 +16,7 @@ public class ConfigWindow : Window, IDisposable
     private string relayPassword;
     private bool askedForLocations;
 
-    public ConfigWindow(Plugin plugin) : base("AnoMech Settings###AnoMechConfig")
+    public ConfigWindow(Plugin plugin) : base("AsuMech Settings###AnoMechConfig")
     {
         Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.AlwaysAutoResize;
@@ -55,6 +55,15 @@ public class ConfigWindow : Window, IDisposable
             configuration.EnableMechanicResultMarks = resultMarks;
             configuration.Save();
         }
+
+        var showSpeed = configuration.ShowSpeedControl;
+        if (ImGui.Checkbox("Show speed control", ref showSpeed))
+        {
+            configuration.ShowSpeedControl = showSpeed;
+            configuration.Save();
+        }
+        if (ImGui.IsItemHovered())
+            ImGui.SetTooltip("Adds the scenario speed buttons and a typed value under God mode in the main window.\nWarning: bots can die at other speeds, since they still run at normal speed.");
 
         var userActions = configuration.EnableUserActions;
         if (ImGui.Checkbox("Resolve your own actions", ref userActions))

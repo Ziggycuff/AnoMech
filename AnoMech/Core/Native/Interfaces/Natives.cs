@@ -27,6 +27,7 @@ public static class Natives
     public static IPlayerConditions PlayerConditions { get; internal set; } = null!;
     public static ILimitBreakController LimitBreak { get; internal set; } = null!;
     public static IWaymarks Waymarks { get; internal set; } = null!;
+    public static IVfxFunctions Vfx { get; internal set; } = null!;
     public static IBgm Bgm { get; internal set; } = null!;
 
     // Only the services that must run every frame whether or not a sim is; the sim ticks the

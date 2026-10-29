@@ -45,6 +45,7 @@ public unsafe class MainWindow : Window, IDisposable
     private readonly Plugin plugin;
     private readonly TitleBarButton autoCollapseButton;
     private IZone? _openZone;
+    private string? _pendingCategoryTab;
     internal ScenarioPanelWindow ScenarioPanel { get; }
     internal PartyPanelWindow PartyPanel { get; }
     private readonly MultiplayerUi multiplayerUi;
@@ -107,7 +108,7 @@ public unsafe class MainWindow : Window, IDisposable
     {
         var v = Assembly.GetExecutingAssembly().GetName().Version;
         var version = v is null ? "" : $" v{v.Major}.{v.Minor}.{v.Build}.{v.Revision}";
-        return $"AnoMech{version}";
+        return $"AsuMech{version}###MainWindow";
     }
 
     // The title bar still shows while the window is collapsed for the run.
@@ -347,29 +348,49 @@ public unsafe class MainWindow : Window, IDisposable
             DrawZoneScenarios(lockedZone, right);
             return;
         }
-        foreach (var zone in Plugin.Game.Catalog.Zones)
+        if (!ImGui.BeginTabBar("##scenario-categories")) return;
+        foreach (var category in Plugin.Game.Catalog.Zones.Select(z => z.Category).Distinct())
         {
-            var shouldOpen = _openZone == zone;
-            ImGui.SetNextItemOpen(shouldOpen, ImGuiCond.Always);
-            var containsSelection = ZoneContains(zone, _selectedScenario);
-            var headerColor = BlendColor(
-                StyleColor(ImGuiCol.WindowBg),
-                StyleColor(ImGuiCol.Header),
-                0.72f);
-            ImGui.PushStyleColor(ImGuiCol.Header,
-                containsSelection ? BlendColor(headerColor, SelectionColor, 0.58f) : headerColor);
-            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, containsSelection ? SelectionHoveredColor : HoverColor);
-            ImGui.PushStyleColor(ImGuiCol.HeaderActive, SelectionActiveColor);
-            var open = ImGui.CollapsingHeader($"{zone.Name}###scenario-zone-{zone.GetType().FullName}");
-            ImGui.PopStyleColor(3);
-            if (containsSelection) DrawSelectionAccent();
-            var sectionRight = ImGui.GetItemRectMax().X;
-            if (open != shouldOpen) _openZone = open ? zone : null;
-            if (!open) continue;
-            ImGui.Indent();
-            DrawZoneScenarios(zone, sectionRight);
-            ImGui.Unindent();
+            var flags = _pendingCategoryTab == category ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None;
+            if (!ImGui.BeginTabItem($"{category}###scenario-category-{category}", flags)) continue;
+            if (_pendingCategoryTab == category) _pendingCategoryTab = null;
+            string? lastExpansion = null;
+            foreach (var zone in Plugin.Game.Catalog.Zones.Where(z => z.Category == category))
+            {
+                if (zone.Expansion is { } expansion && expansion != lastExpansion)
+                {
+                    ImGui.TextDisabled(expansion);
+                    lastExpansion = expansion;
+                }
+                DrawZoneSection(zone);
+            }
+            ImGui.EndTabItem();
         }
+        ImGui.EndTabBar();
+    }
+
+    private void DrawZoneSection(IZone zone)
+    {
+        var shouldOpen = _openZone == zone;
+        ImGui.SetNextItemOpen(shouldOpen, ImGuiCond.Always);
+        var containsSelection = ZoneContains(zone, _selectedScenario);
+        var headerColor = BlendColor(
+            StyleColor(ImGuiCol.WindowBg),
+            StyleColor(ImGuiCol.Header),
+            0.72f);
+        ImGui.PushStyleColor(ImGuiCol.Header,
+            containsSelection ? BlendColor(headerColor, SelectionColor, 0.58f) : headerColor);
+        ImGui.PushStyleColor(ImGuiCol.HeaderHovered, containsSelection ? SelectionHoveredColor : HoverColor);
+        ImGui.PushStyleColor(ImGuiCol.HeaderActive, SelectionActiveColor);
+        var open = ImGui.CollapsingHeader($"{zone.Name}###scenario-zone-{zone.GetType().FullName}");
+        ImGui.PopStyleColor(3);
+        if (containsSelection) DrawSelectionAccent();
+        var sectionRight = ImGui.GetItemRectMax().X;
+        if (open != shouldOpen) _openZone = open ? zone : null;
+        if (!open) return;
+        ImGui.Indent();
+        DrawZoneScenarios(zone, sectionRight);
+        ImGui.Unindent();
     }
 
     private void DrawZoneScenarios(IZone zone, float sectionRight)
@@ -435,6 +456,7 @@ public unsafe class MainWindow : Window, IDisposable
 
         _selectedScenario = scenario;
         _openZone = scenario.Phase.Zone;
+        _pendingCategoryTab = scenario.Phase.Zone.Category;
         _soloMode = false;
         _selectedStrat = 0;
         _selectedWaymark = _waymarkMemory.GetValueOrDefault(scenario.Phase.Zone);
@@ -478,9 +500,7 @@ public unsafe class MainWindow : Window, IDisposable
         var game = Plugin.Game;
         var mpGuest = IsGuest;
         ReconcileSetup(inSession, mpGuest);
-#if DEBUG
         if (inSession) game.EventTimeScale = 1f;
-#endif
 
         DrawScenarioHeader(game);
         if (inSession) DrawSession();
@@ -488,6 +508,7 @@ public unsafe class MainWindow : Window, IDisposable
         if (!inSession) DrawSoloOption(game);
         DrawLocationHint();
         DrawRunOptions(game, Plugin.Practice, inSession);
+        DrawSpeedOption(game, inSession);
 
         ImGui.Spacing();
         DrawSections(_selectedScenario, inSession, mpGuest);
@@ -890,6 +911,20 @@ public unsafe class MainWindow : Window, IDisposable
 
     // God mode and auto-restart are disabled while a session is being set up or is live; forced
     // off, not just disabled, so a stale value can't apply.
+    private readonly SpeedControl speedControl = new();
+
+    private void DrawSpeedOption(AnoMech.Core.Game.Game game, bool mpActive)
+    {
+        if (!Plugin.Config.ShowSpeedControl) return;
+        ImGui.BeginDisabled(mpActive);
+        ImGui.BeginGroup();
+        speedControl.Draw(game, "main-speed");
+        ImGui.EndGroup();
+        ImGui.EndDisabled();
+        if (mpActive && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+            ImGui.SetTooltip(MpDisabledReason);
+    }
+
     private static void DrawRunOptions(AnoMech.Core.Game.Game game, PracticeLoop practice, bool mpActive)
     {
         ImGui.Spacing();

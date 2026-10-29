@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
@@ -16,6 +17,7 @@ internal sealed class DataminingGameData(FakeRsvFunctions rsv) : IGameData
     private static readonly Lazy<Sheet> Knockbacks = Load("Knockback");
     private static readonly Lazy<Sheet> ModelCharas = Load("ModelChara");
     private static readonly Lazy<Sheet> ModelSkeletons = Load("ModelSkeleton");
+    private static readonly Lazy<Sheet> NpcEquips = Load("NpcEquip");
     private static readonly Lazy<Sheet> Omens = Load("Omen");
     private static readonly Lazy<Sheet> Statuses = Load("Status");
     private static readonly Lazy<Sheet> TerritoryTypes = Load("TerritoryType");
@@ -58,12 +60,20 @@ internal sealed class DataminingGameData(FakeRsvFunctions rsv) : IGameData
 
     public BNpcBaseRow? BNpcBase(uint bnpcBaseId)
         => BNpcBases.Value.Row(bnpcBaseId) is { } row
-            ? new BNpcBaseRow(bnpcBaseId, row.Float("Scale"), row.UInt("ModelChara"))
+            ? new BNpcBaseRow(bnpcBaseId, row.Float("Scale"), row.UInt("ModelChara"), row.UInt("NpcEquip"))
             : null;
 
     public ModelCharaRow? ModelChara(uint modelCharaId)
         => ModelCharas.Value.Row(modelCharaId) is { } row
             ? new ModelCharaRow(modelCharaId, row.Byte("Type"), row.UShort("Model"), row.Float("Radius"))
+            : null;
+
+    private static readonly string[] GearSlots = ["Head", "Body", "Hands", "Legs", "Feet", "Ears", "Neck", "Wrists", "RightRing", "LeftRing"];
+
+    public NpcEquipRow? NpcEquip(uint npcEquipId)
+        => NpcEquips.Value.Row(npcEquipId) is { } row
+            ? new NpcEquipRow(npcEquipId, row.ULong("ModelMainHand"), row.UInt("DyeMainHand"), row.ULong("ModelOffHand"), row.UInt("DyeOffHand"),
+                GearSlots.Select(slot => row.UInt("Model" + slot)).ToList(), GearSlots.Select(slot => row.UInt("Dye" + slot)).ToList())
             : null;
 
     public ModelSkeletonRow? ModelSkeleton(uint skeletonId)
@@ -204,6 +214,7 @@ internal sealed class DataminingGameData(FakeRsvFunctions rsv) : IGameData
     {
         public string Text(string column) => fields[sheet.Column(column)];
         public uint UInt(string column) => uint.Parse(Text(column), CultureInfo.InvariantCulture);
+        public ulong ULong(string column) => ulong.Parse(Text(column), CultureInfo.InvariantCulture);
         public byte Byte(string column) => byte.Parse(Text(column), CultureInfo.InvariantCulture);
         public sbyte SByte(string column) => sbyte.Parse(Text(column), CultureInfo.InvariantCulture);
         public ushort UShort(string column) => ushort.Parse(Text(column), CultureInfo.InvariantCulture);

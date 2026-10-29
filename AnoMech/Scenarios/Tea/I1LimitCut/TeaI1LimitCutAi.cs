@@ -7,7 +7,9 @@ using static AnoMech.Scenarios.Tea.TeaConstants;
 
 namespace AnoMech.Scenarios.Tea.I1LimitCut;
 
-public sealed class TeaI1LimitCutAi : IScenarioAi<TeaI1LimitCutState>
+// evensTakeTheCharge: the even numbers let Super Blassty Charge knock them away, no immunity and their
+// back to Cruise Chaser.
+public sealed class TeaI1LimitCutAi(Func<int, float, Vector2?>? route = null, bool evensTakeTheCharge = false) : IScenarioAi<TeaI1LimitCutState>
 {
     public string Name => "1256";
 
@@ -17,12 +19,16 @@ public sealed class TeaI1LimitCutAi : IScenarioAi<TeaI1LimitCutState>
     private const float SteerLead = 0.3f;
     private const float StandBelow = 0.8f;
     private const float WalkSpeed = 2.4f;
+    // Cruise Chaser takes the odd number's facing ~1.1s before the hit.
+    private const float RefaceEvery = 0.15f;
+    private const float RefaceUntilBeforeHit = 0.9f;
+    private const float TurnAwayBeforeHit = 0.6f;
 
     private static readonly float[] KnockbackImmunityAt = [9.64f, 11.14f, 14.31f, 15.80f, 18.95f, 20.42f, 23.58f, 25.05f];
-    private static readonly float[] FaceAt = [11.40f, 13.10f, 15.00f, 18.10f, 20.65f, 22.60f, 25.10f, 27.20f];
-    private static readonly float[] BehindCruiseChaserAt = [11.67f, 16.41f, 21.05f, 25.75f];
-    private static readonly float[] HitAt = [12.64f, 14.14f, 17.31f, 18.80f, 21.95f, 23.42f, 26.58f, 28.05f];
-    private static readonly (float From, float To)[] SprintWindows = [(7.7f, 17.7f), default, default, default, (14.4f, 24.4f), default, (20.4f, 30.4f), default];
+    internal static readonly float[] FaceAt = [11.40f, 13.10f, 15.00f, 18.10f, 20.65f, 22.60f, 25.10f, 27.20f];
+    internal static readonly float[] BehindCruiseChaserAt = [11.67f, 16.41f, 21.05f, 25.75f];
+    internal static readonly float[] HitAt = [12.64f, 14.14f, 17.31f, 18.80f, 21.95f, 23.42f, 26.58f, 28.05f];
+    internal static readonly (float From, float To)[] SprintWindows =[(7.7f, 17.7f), default, default, default, (14.4f, 24.4f), default, (20.4f, 30.4f), default];
 
     private static readonly (float At, float Degrees, float Radius)[][] Paths =
     [
@@ -79,23 +85,37 @@ public sealed class TeaI1LimitCutAi : IScenarioAi<TeaI1LimitCutState>
 
     private TeaI1LimitCutState state = null!;
     private SimWorld world = null!;
+    // The scenario's own time 0, for a run that starts it late.
+    private float startedAt;
 
     public void Run(TeaI1LimitCutState stateParam, SimWorld worldParam)
     {
         state = stateParam;
         world = worldParam;
+        startedAt = world.Events.Elapsed;
         var ai = new AiManager(world);
 
         ai.Move(0.3f, StackInCentre);
         for (var number = 1; number <= 8; number++)
         {
             var n = number;
-            ai.UseAction(KnockbackImmunityAt[n - 1], state.Numbers[n - 1], KnockbackImmunity.ActionId);
-            if (n % 2 == 1) world.Events.Add(FaceAt[n - 1], () => FaceClockwise(n));
+            if (!(evensTakeTheCharge && n % 2 == 0))
+                ai.UseAction(KnockbackImmunityAt[n - 1], state.Numbers[n - 1], KnockbackImmunity.ActionId);
+            if (n % 2 == 1)
+            {
+                world.Events.Add(FaceAt[n - 1], () => FaceClockwise(n));
+                if (route is not null)
+                    for (var at = FaceAt[n - 1] + RefaceEvery; at < HitAt[n - 1] - RefaceUntilBeforeHit; at += RefaceEvery)
+                        world.Events.Add(at, () => FaceClockwise(n));
+            }
             else
             {
-                world.Events.Add(FaceAt[n - 1], () => FaceCruiseChaser(n));
-                ai.Move(BehindCruiseChaserAt[n / 2 - 1], () => ByNumber((n, BehindCruiseChaser())));
+                if (evensTakeTheCharge)
+                    for (var at = HitAt[n - 1] - TurnAwayBeforeHit; at < HitAt[n - 1]; at += RefaceEvery)
+                        world.Events.Add(at, () => FaceAwayFromCruiseChaser(n));
+                else
+                    world.Events.Add(FaceAt[n - 1], () => FaceCruiseChaser(n));
+                if (route is null) ai.Move(BehindCruiseChaserAt[n / 2 - 1], () => ByNumber((n, BehindCruiseChaser())));
             }
             var window = SprintWindows[n - 1];
             if (window.To > window.From)
@@ -106,7 +126,7 @@ public sealed class TeaI1LimitCutAi : IScenarioAi<TeaI1LimitCutState>
 
     private void Steer(int number)
     {
-        var now = world.Events.Elapsed;
+        var now = world.Events.Elapsed - startedAt;
         if (now >= Paths[number - 1][^1].At) return;
         world.Events.Add(SteerEvery, () => Steer(number));
         if (Holding(number, now) || Member(number) is not { } member || !member.IsAlive()) return;
@@ -118,26 +138,34 @@ public sealed class TeaI1LimitCutAi : IScenarioAi<TeaI1LimitCutState>
         member.MoveTo(new Vector3(to.X, 0f, to.Y), Math.Clamp(speed, WalkSpeed, top));
     }
 
+    // A planned route walks the even number to its spot itself.
     private bool Holding(int number, float time)
     {
+        if (route is not null && number % 2 == 0) return false;
         var from = number % 2 == 1 ? FaceAt[number - 1] : BehindCruiseChaserAt[number / 2 - 1];
         return time > from && time <= HitAt[number - 1] + HitHold;
     }
 
     private Vector2 PathAt(int number, float time)
+        => route?.Invoke(number, time) ?? PlannedAt(state.FirstBlasterAxis, number, time);
+
+    internal static Vector2 PlannedAt(int firstBlasterAxis, int number, float time)
     {
         var path = Paths[number - 1];
-        if (time <= path[0].At) return Polar(number, path[0].Degrees, path[0].Radius);
+        var heading = GroupHeading(firstBlasterAxis, number);
+        if (time <= path[0].At) return Polar(heading, path[0].Degrees, path[0].Radius);
         for (var i = 1; i < path.Length; i++)
         {
             if (time > path[i].At) continue;
             var (from, to) = (path[i - 1], path[i]);
             var f = (time - from.At) / (to.At - from.At);
             var turn = ((to.Degrees - from.Degrees) % 360f + 540f) % 360f - 180f;
-            return Polar(number, from.Degrees + turn * f, from.Radius + (to.Radius - from.Radius) * f);
+            return Polar(heading, from.Degrees + turn * f, from.Radius + (to.Radius - from.Radius) * f);
         }
-        return Polar(number, path[^1].Degrees, path[^1].Radius);
+        return Polar(heading, path[^1].Degrees, path[^1].Radius);
     }
+
+    internal static (float From, float To) PathSpan(int number) => (Paths[number - 1][0].At, Paths[number - 1][^1].At);
 
     private IAiMove StackInCentre()
     {
@@ -163,9 +191,18 @@ public sealed class TeaI1LimitCutAi : IScenarioAi<TeaI1LimitCutState>
     private void FaceClockwise(int number)
     {
         if (Bot(number) is not { } member) return;
+        // A walk still finishing would turn them back the way they came.
+        if (route is not null) member.StopMoving();
         var position = Flat(member.Position);
         var clockwise = Vector2.Normalize(new Vector2(-position.Y, position.X));
         member.Face(member.Position + new Vector3(clockwise.X, 0f, clockwise.Y));
+    }
+
+    private void FaceAwayFromCruiseChaser(int number)
+    {
+        if (Bot(number) is not { } member || state.Objects.CruiseChaser is not { } cruiseChaser) return;
+        member.StopMoving();
+        member.Face(member.Position + (member.Position - cruiseChaser.Position));
     }
 
     private void FaceCruiseChaser(int number)
@@ -181,13 +218,13 @@ public sealed class TeaI1LimitCutAi : IScenarioAi<TeaI1LimitCutState>
         return member is not null && member.IsAlive() && world.Party.IsBotDriven(member) ? member : null;
     }
 
-    private float GroupHeading(int number)
+    private static float GroupHeading(int firstBlasterAxis, int number)
     {
-        var firstWaveEndFromWestToNortheast = state.FirstBlasterAxis switch { 0 => 0f, 1 => 45f, 2 => 270f, _ => 315f };
+        var firstWaveEndFromWestToNortheast = firstBlasterAxis switch { 0 => 0f, 1 => 45f, 2 => 270f, _ => 315f };
         return number is 1 or 2 or 5 or 6 ? firstWaveEndFromWestToNortheast : firstWaveEndFromWestToNortheast + 180f;
     }
 
-    private Vector2 Polar(int number, float degrees, float radius) => Flat(Geometry.OnCompass(GroupHeading(number) + degrees, radius));
+    private static Vector2 Polar(float heading, float degrees, float radius) => Flat(Geometry.OnCompass(heading + degrees, radius));
 
     private static Vector2 Forward(float rotation) => new(MathF.Sin(rotation), MathF.Cos(rotation));
 

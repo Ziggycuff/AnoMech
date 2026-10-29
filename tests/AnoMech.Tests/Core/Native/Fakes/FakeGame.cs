@@ -70,6 +70,7 @@ internal sealed class FakeGame
         Natives.PlayerConditions = PlayerConditions;
         Natives.LimitBreak = limitBreak;
         Natives.Waymarks = waymarks;
+        Natives.Vfx = new FakeVfxFunctions();
         Natives.Bgm = bgm;
         DalamudServices.Install(nameof(Plugin.Framework), Framework);
     }

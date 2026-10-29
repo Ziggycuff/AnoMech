@@ -225,22 +225,9 @@ internal sealed unsafe class DebugMenu
         }
     }
 
-    // Buttons modify Game.EventTimeScale live so callers can speed up / slow down a
-    // scenario mid-run. Scales the scheduler and the sim's own timers; the client's
-    // animations continue at real time (see Game.Tick).
-    public void DrawSpeedControl()
-    {
-        var game = Plugin.Game;
-        ImGui.TextUnformatted("Speed:");
-        for (int x = 1; x <= 4; x++)
-        {
-            ImGui.SameLine();
-            var active = MathF.Abs(game.EventTimeScale - x) < 0.01f;
-            if (active) ImGui.PushStyleColor(ImGuiCol.Button, ImGui.GetColorU32(ImGuiCol.ButtonActive));
-            if (ImGui.Button($"x{x}")) game.EventTimeScale = x;
-            if (active) ImGui.PopStyleColor();
-        }
-    }
+    private readonly SpeedControl speedControl = new();
+
+    public void DrawSpeedControl() => speedControl.Draw(Plugin.Game, "debug-speed");
 
     public void DrawDebugContent()
     {
@@ -500,9 +487,8 @@ internal sealed unsafe class DebugMenu
         ImGui.Spacing();
         ImGui.TextUnformatted("Weather lab (WeatherChange packet)");
         ImGui.Separator();
-        ImGui.TextWrapped("This zone's own catalog (read live from EnvScene._weatherIds): 2 Fair Skies, "
-            + "77/78/79/89/174/175/176 all \"Dimensional Disruption\". One click each, or type any other id below.");
-        foreach (var id in (ReadOnlySpan<byte>)[2, 77, 78, 79, 89, 174, 175, 176])
+        ImGui.TextWrapped("This zone's own catalog (read live from EnvScene._weatherIds). One click each, or type any other id below.");
+        foreach (var id in AnoMech.Core.Native.Implementations.ZoneControl.ZoneWeatherIds())
         {
             if (ImGui.Button($"{id}##weatherquick")) Plugin.Game.World.Map.SetWeather(id, (float)0.5);
             ImGui.SameLine();

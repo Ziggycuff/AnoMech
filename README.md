@@ -1,9 +1,13 @@
 
-# ![AnoMech](images/icon.png) AnoMech
+# ![AsuMech](images/icon6464.png) AsuMech
 
-*Another FFXIV mechanics simulator*
+*Another FFXIV mechanics simulator, now with Savage*
 
 ---
+
+AsuMech is a fork of [AnoMech](https://github.com/anomek/AnoMech) by Anomek. It keeps everything AnoMech has and adds
+Savage raids and other fights that stay in this fork, starting with AAC Heavyweight M1 (Savage). The plugin is still
+opened with `/asumech` (or `/asu`; `/anomech` and `/ano` still work), and only one of the two can be installed at a time.
  
 Simulate FFXIV raid mechanics client-side for solo practice. Go to any Inn, open the plugin with `/anomech` and start practicing!
 
@@ -23,7 +27,14 @@ While simulating:
 
 ## Installation
 
-See: https://github.com/anomek/MyDalamudPlugins
+Add this custom repository in Dalamud (`/xlsettings` → Experimental → Custom Plugin Repositories), then install AsuMech
+from the plugin installer:
+
+```
+https://raw.githubusercontent.com/Asunnya/AsuMech/asunnya-release/pluginmaster.json
+```
+
+For upstream AnoMech, see: https://github.com/anomek/MyDalamudPlugins
 
 ## Beta: Advanced Simulation Resolution
 
@@ -76,11 +87,39 @@ All using default NA pf strats unless noted otherwise:
     - P5 Sigma
     - P5 Omega
     - P6 Exasquares / Wave Cannon 2
-- The Weapon's Refrain (Ultimate) _by [WorstAquaPlayer](https://github.com/WorstAquaPlayer)_
-    - Ultimate Predaction
-    - Ultimate Suppression
+- The Weapon's Refrain (Ultimate)
+    - P1 Garuda _by [Asunnya](https://github.com/Asunnya)_
+    - P2 Ifrit _by [Asunnya](https://github.com/Asunnya)_
+    - P3 Titan _by [Asunnya](https://github.com/Asunnya)_
+    - Ultimate Predaction _by [WorstAquaPlayer](https://github.com/WorstAquaPlayer)_
+    - Ultimate Annihilation _by [Asunnya](https://github.com/Asunnya)_
+    - Ultimate Suppression _by [WorstAquaPlayer](https://github.com/WorstAquaPlayer)_
+    - Primal Roulette _by [Asunnya](https://github.com/Asunnya)_
 - The Unending Coil of Bahamut (Ultimate) _by [RoarkGit](https://github.com/RoarkGit)_
     - Exaflares
+- Dragonsong's Reprise (Ultimate) _by [Asunnya](https://github.com/Asunnya)_
+    - P1 Knights (pull to Thordan: Hyperdimensional Slash, Shining Blade, Playstation, Holiest Hallowing interrupts, Pure of Heart)
+    - P4 The Eyes (Hatebound orbs, Mirage Dive snake swaps)
+    - P5 Wrath of the Heavens (twisters, dragoon tethers, proteans, Eruptions / Liquid Heaven baits, Chain Lightning)
+    - P5 Death of the Heavens (dooms and cleansing puddles, static dives, earthquakes, playstation knockback, gazes)
+    - P6 Wyrmsbreath to Wroth Flames (fire/ice tether pairs, tank breaths, Mortal Vow passes, Akh Afah, Hallowed Wings with Nidhogg's dive, orb crosses with Akh Morn and Hraesvelgr's dive, Hot Wing/Tail spreads and stacks)
+    - P6 Hallowed Wings 2 to Cauterize (second Akh Afah, Hallowed Wings with Hot Wing/Tail, static Wyrmsbreath 2, Pyretic/Deep Freeze cleansed by the dragons' dives, Touchdown, last Mortal Vow passes)
+- AAC Heavyweight M1 (Savage) — M9S _by [Asunnya](https://github.com/Asunnya)_
+    - Vamp Stomp, Hell in a Cell, Aetherletting, Coffinmaker, Undead Deathmatch, Flails, Vamp Stomp 2, Final
+- AAC Heavyweight M2 (Savage) — M10S _by [Asunnya](https://github.com/Asunnya)_
+    - Flame Floater to Pyrotation (Hot Impact, Flame Floater tether charges, Alley-oop Inferno spreads, Cutback Blaze, Pyrotation)
+    - Sickest Take-off to Deep Impact (Sick Swell wave and Deep Blue's lane, orb stacks or spreads, Reverse/Double-dip proteans, Deep Impact)
+    - Xtreme Spectacular to Insane Air (multi-hit raidwide, both surfboards' four stops with proteans, light party stacks and tank busters)
+    - Fire/Watersnaking to Hot Impact (fire/water split by distance, Deep Blue's corner proteans, Alley-oop Inferno spreads, Sick Swell's wave, shared tank buster)
+    - Deep Varial to Deep Impact (wide fan with small-wave stack or spreads, Alley-oop Inferno, Steam Burst, Hot Aerial's four jumps, Sickest Take-off with the wave's push, Cutback Blaze, Deep Impact)
+    - Deep Aerial (tower into the Watery Grave, six rounds of fire and water wave tethers that must stretch, fire through the prison and water around it, Scathing Steam)
+- AAC Heavyweight M3 (Savage) — M11S _by [Asunnya](https://github.com/Asunnya)_
+    - Raw Steel Trophy to Void Stardust (axe or scythe Raw Steel, Trophy Weapons into Assault Evolved twice, Void Stardust comets ending in a stack or spreads)
+    - Dance of Domination to One and Only (raidwides into pair stacks between six lines, second Raw Steel Trophy, Charybdistopia, Ultimate Trophy Weapons' six strikes leaving Maelstroms, tornado gust baits)
+    - Great Wall of Fire to Orbital Omen (two line tank busters leaving walls that explode, four pairs of portal lines with Fire and Fury's front and back cones)
+    - Meteorain to Triple Tyrannhilation (proximity-baited meteors, shade tethers for the tanks, Fearsome Fireball lines blown into meteors, hiding from three shockwaves behind the last meteors)
+    - Arena Split (Flatliner's knockback onto two platforms, towers that knock back, Meteowrath tethers to stretch, Fire Breath, chasing puddles and portal meteor lines twice, Massive Meteor stacks, last towers and Arcadion Avalanche)
+    - Ecliptic Stampede to Heartbreak Kick (Mammoth Meteors, Atomic Impact puddles at the walls while the group baits meteors round the boss, one- and two-player towers, tethers to the corners, Two-way Fireball line stacks, Heartbreak Kick towers)
 
 ## Details
 
@@ -116,6 +155,7 @@ Thanks for contributors:
 * [altair9x](https://github.com/altair9x) - extra strategies
 * [Quantumlyy](https://github.com/Quantumlyy) - extra strategies
 * [Linqx](https://github.com/Linqx) - success/failure checkmarks
+* [Asunnya](https://github.com/Asunnya) - M9S, M10S, M11S, UWU P1 Garuda / P2 Ifrit / P3 Titan / Ultimate Annihilation, DSR P1 Knights / P2 Thordan / P3 Nidhogg / P4 Eyes / P5 Wrath / P5 Death / P6 Double Dragons
 
 AnoMech leans heavily on the work of other Dalamud plugins. Huge thanks to their authors!  
 Without them, the following would not be possible:

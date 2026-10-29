@@ -30,7 +30,8 @@ public sealed class TeaI1LimitCutScenario : IMultiplayerReplayable
     public string Name => "Limit Cut";
     public IPhase Phase => TeaZone.I1;
     public bool SupportsMultiplayer => true;
-    public IReadOnlyList<IScenarioAi> AiStrats => [new TeaI1LimitCutAi()];
+    public IReadOnlyList<IScenarioAi> AiStrats => [Ai];
+    internal TeaI1LimitCutAi Ai { get; init; } = new();
     public void DrawSettings() => settingsWindow.Draw();
     public bool HasPerPlayerSettings => true;
     public void DrawPerPlayerSettings() => settingsWindow.DrawPerPlayer();

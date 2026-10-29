@@ -14,6 +14,9 @@ internal sealed record MechanicFailure(string Reason, float Time);
 
 internal sealed record ScenarioRunOptions
 {
+    // Frames a spawned actor takes to arrive, as the engine's NpcSpawn handler takes.
+    public (int Min, int Max) PacketSpawnFrames { get; init; }
+
     // Ends the run at this scenario time, as a pass unless something already failed.
     public float? StopAt { get; init; }
 
@@ -44,9 +47,6 @@ internal sealed record ScenarioRunOptions
 
     // Edits the plugin configuration before the run.
     public Action<Configuration>? Configure { get; init; }
-
-    // How many frames an NPC's spawn packet takes to build its actor; none by default.
-    public (int Min, int Max) PacketSpawnFrames { get; init; }
 }
 
 // From the first player takeover on, the player stops following the AI, as a human who froze there

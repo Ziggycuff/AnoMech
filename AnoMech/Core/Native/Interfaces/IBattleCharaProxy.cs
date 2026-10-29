@@ -44,13 +44,15 @@ public interface IBattleCharaProxy
 
     // DrawObject.Visibility: SpawnVisibility.HiddenUntilShown while there is no DrawObject.
     bool HasDrawObject { get; }
-    bool IsDrawObjectVisible { get; }
+    bool IsDrawObjectVisible { get; set; }
 
     byte ModelState { get; }
 
     // The look a spawn packet would carry to copy this character: customize, gear and weapons as
     // drawn now. Null while there is no character.
     NpcAppearance? Appearance { get; }
+    // GameObject.Scale, mirrored onto the DrawObject so the model resizes.
+    float ModelScale { get; set; }
 
     // ── Casting ──────────────────────────────────────────────────────────────
 

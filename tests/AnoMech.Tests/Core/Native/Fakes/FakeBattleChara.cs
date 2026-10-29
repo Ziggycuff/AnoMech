@@ -53,13 +53,28 @@ internal sealed class FakeBattleChara(FakeBattleCharas owner, int slot) : IBattl
 
     public bool HasDrawObject => Actor?.HasDrawObject ?? false;
 
-    public bool IsDrawObjectVisible => Actor is { HasDrawObject: true, IsDrawObjectVisible: true };
+    public bool IsDrawObjectVisible
+    {
+        get => Actor is { HasDrawObject: true, IsDrawObjectVisible: true };
+        set { if (Actor is { HasDrawObject: true } a) a.IsDrawObjectVisible = value; }
+    }
 
 
     public byte ModelState => Actor?.ModelState ?? 0;
 
     // A fake draws nothing, so it has no look to copy.
     public NpcAppearance? Appearance => Actor is null ? null : new NpcAppearance();
+    public float ModelScale
+    {
+        get => modelScale;
+        set
+        {
+            if (Actor is { } actor && modelScale > 0f) actor.HitboxRadius *= value / modelScale;
+            modelScale = value;
+        }
+    }
+
+    private float modelScale = 1f;
 
     // ── Casting ──────────────────────────────────────────────────────────────
 

@@ -1,0 +1,69 @@
+name: Fork release
+
+on:
+  push:
+    branches: [ asunnya-release ]
+    paths-ignore: [ pluginmaster.json, '**.md' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fork-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-2022
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Download Dalamud
+      run: |
+        Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+        Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+
+    # The csproj's major.minor.build plus one past the highest released revision of it, starting at 0.
+    - name: Pick version
+      id: version
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        base=$(sed -n 's:.*<Version>\([0-9]*\.[0-9]*\.[0-9]*\)\.[0-9]*</Version>.*:\1:p' AnoMech/AnoMech.csproj)
+        last=$(gh release list -L 1000 --json tagName -q '.[].tagName' | sed -n "s/^v${base//./\\.}\.\([0-9]*\)$/\1/p" | sort -n | tail -n 1)
+        echo "version=$base.$(( ${last:--1} + 1 ))" >> "$GITHUB_OUTPUT"
+
+    - name: Build
+      run: dotnet build --configuration Release -p:Version=${{ steps.version.outputs.version }}
+
+    - name: Publish release
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      # The packager drops the zip under bin/Release or bin/x64/Release depending on the solution platform.
+      run: |
+        zip=$(find AnoMech/bin -name latest.zip -path '*Release*' | head -n 1)
+        if [ -z "$zip" ]; then echo "latest.zip not found under AnoMech/bin"; find AnoMech/bin -maxdepth 3; exit 1; fi
+        echo "Publishing $zip"
+        gh release create "v${{ steps.version.outputs.version }}" "$zip" \
+          --target "$GITHUB_SHA" --title "AsuMech ${{ steps.version.outputs.version }}" --notes "Built from $GITHUB_SHA"
+
+    - name: Update pluginmaster
+      shell: bash
+      run: |
+        version="${{ steps.version.outputs.version }}"
+        sed -i "s/\"AssemblyVersion\": \"[^\"]*\"/\"AssemblyVersion\": \"$version\"/; s/\"LastUpdate\": \"[^\"]*\"/\"LastUpdate\": \"$(date +%s)\"/" pluginmaster.json
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add pluginmaster.json
+        git commit -m "Release $version"
+        git push origin HEAD:asunnya-release

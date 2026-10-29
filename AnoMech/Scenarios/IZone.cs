@@ -13,6 +13,11 @@ namespace AnoMech.Scenarios;
 public interface IZone
 {
     string Name { get; }
+
+    // Menu grouping: the tab the zone sits under, then the expansion heading inside it
+    // (null = no heading).
+    string Category => "Ultimate";
+    string? Expansion => null;
     uint TerritoryId { get; }
     Vector3 Origin { get; }
 

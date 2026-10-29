@@ -169,6 +169,29 @@ internal sealed unsafe class BattleCharaProxy : IBattleCharaProxy
             var obj = Ptr;
             return obj != null && obj->DrawObject != null && obj->DrawObject->IsVisible;
         }
+        set
+        {
+            var obj = Ptr;
+            if (obj != null && obj->DrawObject != null) obj->DrawObject->IsVisible = value;
+        }
+    }
+
+    public float ModelScale
+    {
+        get
+        {
+            var obj = Ptr;
+            return obj == null ? 1f : obj->Scale;
+        }
+        set
+        {
+            var obj = Ptr;
+            if (obj == null) return;
+            // The client derives the hitbox from the scale only when it builds the model.
+            if (obj->Scale > 0f) obj->HitboxRadius *= value / obj->Scale;
+            obj->Scale = value;
+            if (obj->DrawObject != null) obj->DrawObject->Scale = new Vector3(value);
+        }
     }
 
     public byte ModelState

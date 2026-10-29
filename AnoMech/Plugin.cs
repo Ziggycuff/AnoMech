@@ -41,6 +41,8 @@ public sealed class Plugin : IDalamudPlugin
 
     private const string CommandName = "/anomech";
     private const string CommandAlias = "/ano";
+    private const string AsuMechCommand = "/asumech";
+    private const string AsuMechAlias = "/asu";
     private bool commandsRegistered;
 
     internal static Configuration Config { get; private set; } = null!;
@@ -106,6 +108,14 @@ public sealed class Plugin : IDalamudPlugin
             {
                 HelpMessage = "Alias for /anomech"
             });
+            CommandManager.AddHandler(AsuMechCommand, new CommandInfo(OnCommand)
+            {
+                HelpMessage = "Open AsuMech. Subcommands: config, mp, start, reset, leave"
+            });
+            CommandManager.AddHandler(AsuMechAlias, new CommandInfo(OnCommand)
+            {
+                HelpMessage = "Alias for /asumech"
+            });
             commandsRegistered = true;
 
             PluginInterface.UiBuilder.Draw += windowSystem.Draw;
@@ -121,6 +131,7 @@ public sealed class Plugin : IDalamudPlugin
 
             // Initialize Pointers
             EventObjectManagerPointers.Initialize();
+            EventObjectPointers.Initialize();
             GameMainPointers.Initialize();
             ModelContainerPointers.Initialize();
             PacketDispatcherPointers.Initialize();
@@ -198,6 +209,8 @@ public sealed class Plugin : IDalamudPlugin
         {
             CommandManager.RemoveHandler(CommandName);
             CommandManager.RemoveHandler(CommandAlias);
+            CommandManager.RemoveHandler(AsuMechCommand);
+            CommandManager.RemoveHandler(AsuMechAlias);
         }
     }
 
