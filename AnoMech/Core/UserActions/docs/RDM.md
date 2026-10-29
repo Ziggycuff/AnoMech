@@ -41,11 +41,11 @@ _✅ works · ⚠️ partial · ❌ not simulated · ➖ nothing to simulate (pu
 | Vice of Thorns | 37005 | ✅ | Consumes Thorned Flourish. |
 | Grand Impact | 37006 | ✅ | +3 W/+3 B; consumes Grand Impact Ready. |
 | Prefulgence | 37007 | ✅ | Consumes Prefulgence Ready. |
-| Enchanted Riposte | 7527 | ✅ | −20 W/−20 B via cost path; +1 Mana Stack. |
-| Enchanted Zwerchhau | 7528 | ✅ | −15 W/−15 B; +1 Mana Stack. |
-| Enchanted Redoublement | 7529 | ✅ | −15 W/−15 B; +1 Mana Stack. |
-| Enchanted Riposte/Zwerchhau/Redoublement (Manafication) | 45960-45962 | ✅ | +1 Mana Stack; combo as their base action. |
-| Enchanted Moulinet | 7530 | ✅ | −20 W/−20 B; +1 Mana Stack. |
+| Enchanted Riposte | 7527 | ✅ | −20 W/−20 B via cost path (free under Magicked Swordplay); +1 Mana Stack. |
+| Enchanted Zwerchhau | 7528 | ✅ | −15 W/−15 B (free under Magicked Swordplay); +1 Mana Stack. |
+| Enchanted Redoublement | 7529 | ✅ | −15 W/−15 B (free under Magicked Swordplay); +1 Mana Stack. |
+| Enchanted Riposte/Zwerchhau/Redoublement (Manafication) | 45960-45962 | ✅ | Free under Magicked Swordplay; +1 Mana Stack; combo as their base action. |
+| Enchanted Moulinet | 7530 | ✅ | −20 W/−20 B (free under Magicked Swordplay); +1 Mana Stack. |
 | Enchanted Moulinet Deux | 37002 | ✅ | Mana spend + 1 Mana Stack; decrements Magicked Swordplay. |
 | Enchanted Moulinet Trois | 37003 | ✅ | Mana spend + 1 Mana Stack; decrements Magicked Swordplay. |
 | Enchanted Reprise | 16528 | ✅ | −5 W/−5 B; grants no stack (correct). |
@@ -60,6 +60,5 @@ Addle, Sleep, Lucid Dreaming, Surecast — ➖. Swiftcast ✅ (167 → next spel
 
 ## Not simulated
 - **Unbalanced mana** — White/Black clamp independently; the |White − Black| > 30 penalty (lower colour generates at half rate) and crystal recolour are unmodelled (`// TODO`).
-- **Magicked Swordplay free-cast** — under Magicked Swordplay enchanted melee should cost a stack instead of mana; the generic cost path always subtracts White/Black mana, so enchanted melee never becomes free.
 - **Conditional proc guarantees** — procs roll their flat chance (Verthunder III/Veraero III/Impact 50%, Verflare/Verholy 20%) even where the game guarantees 100%: while Acceleration is up, and (for Verflare/Verholy) when the opposite mana colour is higher.
 - **Base Verthunder/Veraero (7505/7507)** — grant only the proc, not their +6 mana (moot at 100; the III forms are correct).
